@@ -9,11 +9,7 @@
 char translation(char c, char key)
 {
 	if ((c >= 'A' && c <= 'Z') && (key >= 'A' && key <= 'Z'))
-	{
-		c += 'A' - key;
-		if (c < 'A')
-			c += 26;
-	}
+		c = ((c - key + 26) % 26) + 'A';
 	return c;
 }
 
@@ -40,7 +36,7 @@ char *makeKey(void)
 	scanf("%s", tmpKey);
 	char *key = (char *)malloc(sizeof(char) * strlen(tmpKey) + 1);
 	strncpy(key, tmpKey, strlen(tmpKey));
-	key[sizeof(key) - 1] = '\0';
+	key[strlen(tmpKey)] = '\0';
 
 	return (key);
 }
@@ -50,19 +46,33 @@ void devideCol(char *cipherText, char *key)
 	int idx;
 	int keyLen = strlen(key);
 
+	int **alphabet = (int **)malloc(sizeof(int *) * keyLen);
 	char **split = (char **)malloc(sizeof(char *) * keyLen + 1);
 	for (idx = 0; idx < keyLen; idx++)
+	{
 		split[idx] = (char *)malloc(sizeof(char) * BUFFER_SIZE / keyLen + 1);
+		alphabet[idx] = (int *)malloc(sizeof(int) * 26);
+	}
 	idx = -1;
 	while (cipherText[++idx])
 	{
 		split[idx % keyLen][idx / keyLen] = cipherText[idx];
+		alphabet[idx % keyLen][cipherText[idx] - 'A']++;
 	}
 	for (idx = 0; idx < keyLen; idx++)
-		printf("COL %d : %s\n", idx + 1, split[idx]);
+	{
+		printf("COL %d : %s\nFREQUENCIES %d :", idx + 1, split[idx], idx + 1);
+		for (int i = 0; i < 26; i++)
+			printf(" %c:%d ", 'A' + i, alphabet[idx][i]);
+		printf("\n");
+	}
 	for (idx = 0; idx < keyLen; idx++)
+	{
 		free(split[idx]);
+		free(alphabet[idx]);
+	}
 	free(split);
+	free(alphabet);
 }
 int main(void)
 {
